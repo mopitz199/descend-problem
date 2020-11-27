@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="grid.js"></script>
+  </head>
+  <body>
+    <p>From a given matrix of number. Write a function that can check if you can for from top-left to bottom-right with one rule:</p>
+    <p>You can only move to one spot that is slower than the current one</p>
+    <textarea name="" id="input-text-area" cols="30" rows="10">[[19, 6, 4, 3, 2],[9, 66, 5, 4, 1],[8, 7, 6, 5, -7],]</textarea>
+    <button id="load">Load</button>
+    <div id="panel"></div>
+    <script>
+      matrix = []
+      visited = {}
+
+      function getKey(pos){
+        key = pos[0]+"_"+pos[1]
+        return key
+      }
+
+      function getNeighboors(pos, visited){
+        var top = 0
+        var bottom = matrix.length - 1
+        var left = 0
+        var right = matrix[0].length
+
+        results = []
+
+        top_pos = [pos[0]-1, pos[1]]
+        bottom_pos = [pos[0]+1, pos[1]]
+        right_pos = [pos[0], pos[1]+1]
+        left_pos = [pos[0], pos[1]-1]
+
+        if(top_pos[0] >= top && getVal(top_pos, matrix) <= getVal(pos, matrix)){
+          key = getKey(top_pos)
+          if(!visited[key]){
+            results.push([...top_pos])
+          }
+        }
+        if(bottom_pos[0]<=bottom && getVal(bottom_pos, matrix) <= getVal(pos, matrix)){
+          key = getKey(bottom_pos)
+          if(!visited[key]){
+            results.push([...bottom_pos])
+          }
+        }
+        if(right_pos[0]<=right && getVal(right_pos, matrix) <= getVal(pos, matrix)){
+          key = getKey(right_pos)
+          if(!visited[key]){
+            results.push([...right_pos])
+          }
+        }
+        if(left_pos[0]>=left && getVal(left_pos, matrix) <= getVal(pos, matrix)){
+          key = getKey(left_pos)
+          if(!visited[key]){
+            results.push([...left_pos])
+          }
+        }
+        return results
+      }
+
+      function getVal(pos, matrix){
+        return matrix[pos[0]][pos[1]]
+      }
+
+      $("#load").on("click", () => {
+        visited = {}
+        let val = $("#input-text-area").val()
+        matrix = eval(val)
+        $("#panel").empty()
+        build_matrix(matrix)
+        check([0,0], visited)
+      })
+
+      async function check(pos, visited){
+        setColor(pos[0], pos[1], "#3BC0F3")
+        last_pos = [matrix.length-1, matrix[0].length-1]
+        await new Promise(done => setTimeout(() => done(), 1000));
+
+        if(pos[0] == last_pos[0] && pos[1] == last_pos[1]){
+          return true
+        }
+
+        let key = getKey(pos)
+        visited[key] = true
+        let children = getNeighboors(pos, visited)
+
+        for(let i=0; i<children.length; i++){
+          has_path = await check([...children[i]], visited)
+          if(has_path){
+            return true
+          }
+        }
+        return false
+      }
+
+    </script>
+  </body>
+</html>
